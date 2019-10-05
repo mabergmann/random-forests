@@ -10,4 +10,4 @@ def get_possible_values(dataset, attr):
         attr_value = instance[attr]
         divisions.add(attr_value)
 
-        return divisions
+    return divisions

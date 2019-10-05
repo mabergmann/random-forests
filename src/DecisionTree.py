@@ -7,12 +7,13 @@ class DecisionTree:
     def __init__(self):
         self.is_leaf = False
         self.is_trained = False
+        self.division = None
 
     def train(self, dataset):
         gain = self.find_attribute_with_most_information_gain(dataset)
 
         if gain == 0:
-            self.define_as_leaf(dataset)
+            self.is_leaf = True
 
         elif self.is_numerical():
             dataset_smaller, dataset_bigger = dataset.filter_dataset_numerical(self.div_attr, self.division)
@@ -28,13 +29,11 @@ class DecisionTree:
                 new_dataset = dataset.filter_dataset_categorical(self.div_attr, c)
                 self.forward[c].train(new_dataset)
 
-        self.is_trained = True
-
-    def define_as_leaf(self, dataset):
-        self.is_leaf = True
         classes = [x['class'] for x in dataset]
         self.predicted_class = stats.mode(classes)[0]
         self.probability = classes.count(self.predicted_class) / len(dataset)
+
+        self.is_trained = True
 
     def find_attribute_with_most_information_gain(self, dataset):
         # Returns the gain
@@ -60,3 +59,21 @@ class DecisionTree:
 
     def is_numerical(self):
         return self.division is not None
+
+    def __call__(self, sample, *args, **kwargs):
+        if not self.is_trained:
+            raise Exception("Decision tree not trained yet. Please call dt.tain() before dt()")
+        if self.is_leaf:
+            return self.predicted_class, self.probability
+
+        if self.is_numerical():
+            if sample[self.div_attr] < self.division:
+                return self.forward['smaller'](sample)
+            else:
+                return self.forward['bigger'](sample)
+        else:
+            attr_class = sample[self.div_attr]
+            if not attr_class in self.forward.keys():
+                return self.predicted_class, self.probability
+            else:
+                return self.forward[attr_class](sample)
