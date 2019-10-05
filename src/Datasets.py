@@ -1,3 +1,6 @@
+from utils import log
+
+
 class CsvDataset:
     def __init__(self, filename):
         with open(filename) as csvfile:
@@ -8,28 +11,23 @@ class CsvDataset:
         self.header = [x.replace('"', '').replace('\n', '').lower() for x in header]
 
         self.itens = []
-        for l in lines[1::]:
-            one_item = self._line_to_dict(l)
+        for one_line in lines[1::]:
+            one_item = self._line_to_dict(one_line)
             self.itens.append(one_item)
 
-        assert len(self.itens) == len(lines)-1 # Asserts everything was added to itens
+        assert len(self.itens) == len(lines) - 1  # Asserts everything was added to itens
 
-    def _line_to_dict(self, l):
-        l = l.split(',')
+    def _line_to_dict(self, line):
+        line = line.split(',')
         one_item = {}
-        for x, y in zip(l, self.header):
+        for x, y in zip(line, self.header):
             try:
                 one_item[y] = float(x)
-                print(f"Adding numeric item to {y}")
-            except:
+                log(f"Adding numeric item to {y}")
+            except ValueError:
                 one_item[y] = x
-                print(f"Adding categorical item to {y}")
+                log(f"Adding categorical item to {y}")
 
         assert len(one_item) > 1  # Avoid empty line
 
         return one_item
-
-
-
-
-
