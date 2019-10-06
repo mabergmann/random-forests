@@ -2,8 +2,6 @@ import utils
 from information_gain import calculate_info_gain_numerical, calculate_info_gain_categorical
 from scipy import stats
 from random import sample
-from itertools import combinations
-import time
 
 class DecisionTree:
     is_leaf = False
@@ -76,6 +74,8 @@ class DecisionTree:
             raise Exception("Decision tree not trained yet. Please call dt.tain() before dt()")
         if self.is_leaf:
             return self.predicted_class, self.probability
+
+        assert self.div_attr is not None
 
         if self.is_numerical():
             if sample[self.div_attr] < self.division:

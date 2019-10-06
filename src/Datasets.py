@@ -1,9 +1,11 @@
-from utils import log
 from random import choice
+import utils
 
 
 class CsvDataset:
+    n_folds = 10
     def __init__(self, filename=None):
+        self.filename = filename
         if filename == None:
             self.header = []
             self.items = []
@@ -30,10 +32,10 @@ class CsvDataset:
             x = x.replace("'", '').replace('\n', '')
             try:
                 one_item[y] = float(x)
-                log(f"Adding numeric item to {y}")
+                utils.log(f"Adding numeric item to {y}")
             except ValueError:
                 one_item[y] = x
-                log(f"Adding categorical item to {y}")
+                utils.log(f"Adding categorical item to {y}")
 
         assert len(one_item) > 1  # Avoid empty
 
@@ -71,6 +73,36 @@ class CsvDataset:
 
         return new_dataset
 
+    def get_folds(self, n):
+        # n is the index of the val fold
+        classes_item = {}
+        for i in self.items:
+            if i['class'] not in classes_item.keys():
+                classes_item[i['class']] = [i]
+            else:
+                classes_item[i['class']].append(i)
+
+        classes_item = {x: utils.chunk_it(classes_item[x], self.n_folds) for x in classes_item.keys()}
+
+        train_data = []
+        test_data = []
+
+        for k in classes_item.keys():
+            for i in range(self.n_folds):
+                if i == n:
+                    train_data += classes_item[k][i]
+                else:
+                    test_data += classes_item[k][i]
+
+        train_dataset = CsvDataset()
+        train_dataset.header = self.header
+        train_dataset.items = train_data
+
+        test_dataset = CsvDataset()
+        test_dataset.header = self.header
+        test_dataset.items = test_data
+
+        return train_dataset, test_dataset
 
     def __iter__(self):
         return self.items.__iter__()

@@ -1,20 +1,44 @@
 import math
+import statistics
+
 from Datasets import CsvDataset
 from RandomForest import RandomForest
-from tqdm import tqdm
+import utils
 
-dataset = CsvDataset("../data/credit.csv")
-# dataset = CsvDataset("../data/spambase.csv")
-# dataset = CsvDataset("../data/vertebra-column.csv")
-# dataset = CsvDataset("../data/wine.csv")
-rf = RandomForest()
-rf.train(dataset, math.ceil(math.sqrt(len(dataset.header))), 10)
+datasets = [CsvDataset("../data/credit.csv"),
+            CsvDataset("../data/vertebra-column.csv"),
+            CsvDataset("../data/wine.csv"),
+            CsvDataset("../data/spambase.csv")]
 
-correct = 0
-for i in tqdm(dataset):
-    result = rf(i)
-    if result[0] == i['class']:
-        correct += 1
+f = open("log.csv", 'w')
+f.write("n_trees,dataset,acc,f1")
 
-print("Correct:", correct)
-print("Acc:", correct/len(dataset))
+for n_trees in range(10, 50, 2):
+    for dataset in datasets:
+        print(f'dataset = {dataset.filename}\nNumber of trees = {n_trees}')
+        accs = []
+        f1s = []
+        for n_fold in range(10):
+            train_dataset, test_dataset = dataset.get_folds(n_fold)
+            rf = RandomForest()
+
+            rf.train(train_dataset, math.ceil(math.sqrt(len(dataset.header))), n_trees)
+
+            predicted = list([rf(sample)[0] for sample in test_dataset])
+            expected = list([sample['class'] for sample in test_dataset])
+
+            acc = utils.accuracy(predicted, expected)
+            f1 = utils.f1_score(predicted, expected)
+            accs.append(acc)
+            f1s.append(f1)
+
+            print("Acc:", acc)
+            print("F1 Score:", f1)
+
+        print("Mean accuracy between folds:", statistics.mean(accs))
+        print("Mean F1 score between folds:", statistics.mean(f1s))
+        f.write(f"{n_trees},{dataset.filename},{statistics.mean(accs)},{statistics.mean(f1s)}")
+
+        print("\n", "#"*80, "\n")
+
+f.close()

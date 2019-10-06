@@ -1,6 +1,4 @@
 from DecisionTree import DecisionTree
-from itertools import combinations
-from random import shuffle
 from scipy import stats
 import statistics
 from tqdm import tqdm
@@ -15,7 +13,7 @@ class RandomForest:
         # n = number o trees
         self.trees = []
 
-        for _ in tqdm(range(n)):
+        for _ in range(n):
             bootstrap = dataset.bootstrap()
             t = DecisionTree()
             t.n_attr = m
@@ -30,7 +28,7 @@ class RandomForest:
         votes = [t(sample) for t in self.trees]
         votes_classes = [v[0] for v in votes]
 
-        mode = stats.mode(votes_classes)[0]
+        mode = stats.mode(votes_classes)[0][0][0]
 
         correct_confidences = [v[1] for v in votes if v[0] == mode]
 
