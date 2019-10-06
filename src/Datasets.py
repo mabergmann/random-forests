@@ -1,4 +1,5 @@
 from utils import log
+from random import choice
 
 
 class CsvDataset:
@@ -60,6 +61,13 @@ class CsvDataset:
         new_dataset = CsvDataset()
         new_dataset.header = attrs.copy()
         new_dataset.items = [{x: i[x] for x in attrs} for i in self.items]
+
+        return new_dataset
+
+    def bootstrap(self):
+        new_dataset = CsvDataset()
+        new_dataset.header = self.header
+        new_dataset.items = [choice(self.items) for _ in range(len(self.items))]
 
         return new_dataset
 

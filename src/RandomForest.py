@@ -16,9 +16,10 @@ class RandomForest:
         self.trees = []
 
         for _ in tqdm(range(n)):
+            bootstrap = dataset.bootstrap()
             t = DecisionTree()
             t.n_attr = m
-            t.train(dataset)
+            t.train(bootstrap)
             self.trees.append(t)
 
         self.trained = True
