@@ -1,4 +1,4 @@
-def log(text, verbose=True):
+def log(text, verbose=False):
     if verbose:
         print(text)
 

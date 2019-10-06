@@ -56,6 +56,14 @@ class CsvDataset:
 
         return smaller_dataset, bigger_dataset
 
+    def filter_attr(self, attrs):
+        new_dataset = CsvDataset()
+        new_dataset.header = attrs.copy()
+        new_dataset.items = [{x: i[x] for x in attrs} for i in self.items]
+
+        return new_dataset
+
+
     def __iter__(self):
         return self.items.__iter__()
 

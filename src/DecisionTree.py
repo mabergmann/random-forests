@@ -1,15 +1,23 @@
 import utils
 from information_gain import calculate_info_gain_numerical, calculate_info_gain_categorical
 from scipy import stats
-
+from random import sample
+from itertools import combinations
+import time
 
 class DecisionTree:
-    def __init__(self):
-        self.is_leaf = False
-        self.is_trained = False
-        self.division = None
+    is_leaf = False
+    is_trained = False
+    division = None
+    n_attr = -1
 
     def train(self, dataset):
+        all_attrs = dataset.header.copy()
+        all_attrs.remove("class")
+        self.attrs_to_use = sample(all_attrs, self.n_attr)
+
+        self.attrs_to_use.append("class")
+
         gain = self.find_attribute_with_most_information_gain(dataset)
 
         if gain == 0:
@@ -18,6 +26,8 @@ class DecisionTree:
         elif self.is_numerical():
             dataset_smaller, dataset_bigger = dataset.filter_dataset_numerical(self.div_attr, self.division)
             self.forward = {'smaller': DecisionTree(), 'bigger': DecisionTree()}
+            self.forward['smaller'].n_attr = self.n_attr
+            self.forward['bigger'].n_attr = self.n_attr
             self.forward['smaller'].train(dataset_smaller)
             self.forward['bigger'].train(dataset_bigger)
 
@@ -26,6 +36,7 @@ class DecisionTree:
             self.forward = {}
             for c in valid_classes:
                 self.forward[c] = DecisionTree()
+                self.forward[c].n_attr = self.n_attr
                 new_dataset = dataset.filter_dataset_categorical(self.div_attr, c)
                 self.forward[c].train(new_dataset)
 
@@ -39,7 +50,7 @@ class DecisionTree:
         # Returns the gain
 
         best_attribute_gain = 0
-        for attr in dataset.header:
+        for attr in self.attrs_to_use:
             if attr == 'class':
                 continue
             if isinstance(dataset[0][attr], float):
