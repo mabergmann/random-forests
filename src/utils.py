@@ -46,6 +46,8 @@ def precision(label, gt):
     gt = np.asarray(gt)
     for c in classes:  # Calculates precision for each class
         predicted_as_c = label == c
+        if sum(predicted_as_c) == 0:
+            continue
         tp = 0
         for l, g in zip(label[predicted_as_c], gt[predicted_as_c]):
             if l == g:

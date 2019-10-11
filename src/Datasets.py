@@ -4,6 +4,7 @@ import utils
 
 class CsvDataset:
     n_folds = 10
+
     def __init__(self, filename=None):
         self.filename = filename
         if filename == None:
@@ -103,6 +104,14 @@ class CsvDataset:
         test_dataset.items = test_data
 
         return train_dataset, test_dataset
+
+    def remove_attribute(self, attr):
+        new_dataset = CsvDataset()
+        new_dataset.header = self.header.copy()
+        new_dataset.header.remove(attr)
+        new_dataset.items = [{x: i[x] for x in new_dataset.header} for i in self.items]
+
+        return new_dataset
 
     def __iter__(self):
         return self.items.__iter__()

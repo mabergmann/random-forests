@@ -5,10 +5,13 @@ import math
 
 def info(classes):
     # Receives a list with the classes and calculate the entropy
-    mode = stats.mode(classes)[0]
-    pi = classes.count(mode) / len(classes)
+    classes_vals = set(classes)
+    sum = 0
+    for i in classes_vals:
+        pi = classes.count(i) / len(classes)
+        sum += -pi * math.log(pi, 2)
 
-    return -pi * math.log(pi, 2)
+    return sum
 
 
 def info_numerical(dataset, attr, division):
@@ -41,6 +44,7 @@ def calculate_info_gain_numerical(dataset, attr):
                 len(bigger_class) / len(dataset)) * info(bigger_class)
 
     return information - information_a, best_division_value
+
 
 def calculate_info_gain_categorical(dataset, attr):
     divisions = {}
